@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  macos-build-and-test:
+    name: Build & Test (macOS)
+    runs-on: macos-14
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run automated test suite
+        run: ./test.sh
+
+      - name: Build application bundle
+        run: ./build.sh release
+
+      - name: Verify application bundle and Info.plist
+        run: |
+          set -euo pipefail
+          test -d "QuickPad.app"
+          test -x "QuickPad.app/Contents/MacOS/QuickPad"
+          test -f "QuickPad.app/Contents/Info.plist"
+          plutil -lint "QuickPad.app/Contents/Info.plist"
+          codesign --verify --deep --strict "QuickPad.app"
+          echo "✓ QuickPad application bundle verified successfully."

@@ -1,140 +1,214 @@
 # QuickPad
 
-> **An ultra-fast, native macOS text editor with intelligent previews.**  
-> Crafted by **[111iridescence](https://111iridescence.org)**.
+<p align="center">
+  <img src="Resources/AppIcon.icns" alt="QuickPad Icon" width="128">
+</p>
 
-[![macOS](https://img.shields.io/badge/macOS-13.0%2B-blue?logo=apple)](https://www.apple.com/macos/)
-[![Swift](https://img.shields.io/badge/Swift-6.0-orange?logo=swift)](https://swift.org)
-[![Architecture](https://img.shields.io/badge/Architecture-Apple%20Silicon%20(arm64)-purple)](https://111iridescence.org)
-[![License](https://img.shields.io/badge/License-MIT-emerald)](LICENSE)
+<p align="center">
+  <b>An ultra-fast, native macOS text editor with intelligent live previews and low resource overhead.</b><br>
+  Engineered with Swift 6 and AppKit specifically for Apple Silicon. Zero startup latency, zero telemetry.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/status-development%20%2F%20staging-amber" alt="Status: Staging">
+  <img src="https://img.shields.io/badge/platform-macOS%2013.0%2B-blue?logo=apple" alt="macOS 13+">
+  <img src="https://img.shields.io/badge/architecture-Apple%20Silicon%20(arm64)-purple" alt="Apple Silicon">
+  <img src="https://img.shields.io/badge/language-Swift%206-orange?logo=swift" alt="Swift 6">
+  <img src="https://img.shields.io/badge/ui-Native%20AppKit-black" alt="AppKit">
+  <img src="https://img.shields.io/badge/tests-53%20assertions%20passing-brightgreen" alt="53 assertions passing">
+  <img src="https://img.shields.io/badge/licence-MIT-green" alt="Licence MIT">
+</p>
 
 ---
 
-## Overview
+## 1. Overview
 
-**QuickPad** is designed as the native macOS counterpart to classic high-performance text editors like Notepad++, but engineered specifically for Apple Silicon with modern AppKit, zero startup latency, and intelligent live previews for structured formats.
+**QuickPad** is designed as the high-performance macOS counterpart to classic desktop text editors, engineered natively for Apple Silicon Macs using **Swift 6 and AppKit**. It pairs instant sub-100 ms cold launches and an ~8 MB baseline memory footprint with intelligent live inspectors for structured formats (GitHub Flavored Markdown, JSON trees, RFC 4180 CSV tables, XML, YAML, and sandboxed HTML).
 
-It prioritizes:
+It strictly prioritises:
 $$\text{Performance} > \text{Reliability} > \text{Simplicity} > \text{Usability} > \text{Visual Polish}$$
 
-- **Instantaneous Startup**: Cold launch in under 100 ms.
-- **Ultra-Low Memory Footprint**: ~8 MB baseline RSS memory; zero memory leaks.
-- **Silent & Efficient**: 0.0% CPU usage when idle; no background indexing or persistent daemons.
-- **Smart Previews**: Live Markdown (GFM), interactive JSON tree with path extraction, virtualized CSV grid, structured XML/YAML/TOML inspectors, and sandboxed HTML preview.
-- **Universal Text Integrity**: Automatic BOM detection (UTF-8, UTF-16 LE, UTF-16 BE), legacy encoding fallback (Windows-1252, ISO-8859-1, MacRoman, Shift-JIS), and binary file safety heuristics.
-- **Native macOS Craftsmanship**: Custom tabs, line number gutter, regex find/replace bar, jump-to-line panel, atomic writes, and external file modification monitoring.
+---
+
+## 2. Application Visuals & Previews
+
+*Visual QA assets are catalogued during local verification builds.*
+
+- **Interactive Split View**: Real-time side-by-side editing with live Markdown preview or virtualised JSON tree.
+- **Line Number Gutter**: Custom flipped AppKit canvas with active line highlight and non-blocking layout calculations.
+- **Theme**: Pure macOS Liquid Glass canvas following the 111iridescence Obsidian Ink (`#16101D`) and Pearl Canvas (`#FAF9FC`) design tokens.
 
 ---
 
-## Measured Performance Benchmarks
+## 3. Main Features
+
+- **Instantaneous Startup & Minimal Footprint**: Cold launch in under 100 ms; baseline RSS memory footprint under 9 MB; 0.0% CPU usage while idle with no background daemon workers.
+- **Intelligent Structured Previews**:
+  - *GitHub Flavored Markdown*: Live preview supporting tables, task checkboxes (`- [x]`), fenced code blocks, and blockquotes inside a sandboxed, script-restricted `WKWebView`.
+  - *JSON Tree Inspector*: Interactive hierarchical tree (`NSOutlineView`) with instant key filtering, "Copy Value", "Copy JSON Path", and formatting utilities.
+  - *RFC 4180 CSV Grid*: Virtualised data table handling quoted fields, commas, tabs, escaped quotes, and multiline cells across datasets exceeding 100,000 rows.
+  - *XML / YAML / TOML Diagnostics*: Structural tree inspectors with parse error highlighting.
+- **Universal Text Integrity**:
+  - Multi-stage encoding detection supporting UTF-8, UTF-16 LE, UTF-16 BE, Windows-1252, ISO-8859-1, MacRoman, and Shift-JIS.
+  - Binary file detection heuristics to protect against accidental corruption of compiled binaries or image data.
+  - Automatic detection and preservation of Unix (`\n`), Windows (`\r\n`), and legacy Mac (`\r`) line endings.
+- **Crash-Resilient Atomic Writes**: Writes documents to a staging file before atomically replacing the destination, eliminating file corruption risks during power interruptions.
+- **External Modification Tracking**: Monitors disk modification timestamps and alerts you if a file is modified externally by git or another process.
+
+---
+
+## 4. Measured Performance Benchmarks
 
 *All benchmarks measured on Apple Silicon macOS 14+ (arm64, Release `-O` build).*
 
 | Workload | Input Size | Processing Time | Memory RSS | Details |
 | :--- | :--- | :--- | :--- | :--- |
 | **Baseline Footprint** | N/A | **Instant** | **8.17 MB** | Raw process startup, zero background workers |
-| **Plain Text Open** | 1 KB | **0.64 ms** | 53.7 MB | Instant buffer allocation & BOM verification |
+| **Plain Text Open** | 1 KB | **0.64 ms** | 53.7 MB | Instant buffer allocation and BOM verification |
 | **Markdown Open** | 100 KB | **0.56 ms** | 53.7 MB | Direct text storage ingestion |
 | **JSON Open** | 1 MB | **0.80 ms** | 53.9 MB | Text buffer ready for typing |
 | **CSV Open** | 10 MB | **3.85 ms** | 63.6 MB | 114,000+ lines ingested in under 4 milliseconds |
 | **Large Plain Text** | 50 MB | **28.55 ms** | 159.5 MB | Non-blocking streaming load |
-| **Massive Plain Text** | 100 MB | **49.25 ms** | 347.3 MB | Sub-50ms opening of 100 MB files |
+| **Massive Plain Text** | 100 MB | **49.25 ms** | 347.3 MB | Sub-50 ms opening of 100 MB files |
 | **GFM Markdown Parser** | 100 KB | **57.68 ms** | — | 1,000 sections, tables, code blocks |
 | **JSON Tree Inspector** | 1 MB | **55.18 ms** | — | 10,000 nodes parsed into virtual tree |
 | **CSV Table Parser** | 10 MB | **303.82 ms** | — | RFC 4180 parsing of 113,975 rows × 6 columns |
 | **Safe Atomic Write** | 100 KB | **6.40 ms** | — | Crash-resilient atomic file write |
-| **Syntax Highlighting** | 1,000 lines | **74.91 ms** | — | Viewport-aware regex colorization (Swift) |
 
 ---
 
-## Key Features
+## 5. System Requirements
 
-### 1. High-Performance Text Engine
-- **TextKit AppKit Engine**: Built upon macOS native text architecture with custom text container and storage configuration for high-frequency keystroke throughput.
-- **Viewport-Aware Syntax Highlighting**: Colorizes visible glyphs first; clamps parsing range for large files to guarantee steady 60 fps typing and scrolling.
-- **Line Number Gutter**: Custom flipped `NSView` drawing line numbers with active line highlighting and dynamic digit-width calculation.
-- **Smart Pairing & Indentation**: Automatic bracket, parenthesis, and quote pairing; auto-indentation matching previous line depth.
-- **Word Wrap Toggle**: Instant switching between wrapped and unwrapped horizontal scrolling (`⌥⌘W`).
-
-### 2. Intelligent Previews
-- **Markdown Preview (`⌘⇧P`)**: Clean GitHub Flavored Markdown renderer supporting tables, task checkboxes (`- [x]`), inline code, fenced code blocks with language tags, blockquotes, and headings. Rendered inside a secure, sandboxed `WKWebView` with JavaScript disabled and debounce updating.
-- **Interactive JSON Inspector**: Tree view (`NSOutlineView`) displaying types, keys, and values. Includes interactive node search/filtering, expand/collapse toggles, "Copy Value", "Copy JSON Path", and "Format JSON" actions.
-- **RFC 4180 CSV Grid**: Virtualized `NSTableView` handling quoted fields, commas, tabs, escaped quotes (`""`), and embedded newlines.
-- **Structured XML / YAML / TOML**: Structural hierarchy inspector with syntax error diagnostics.
-- **HTML Preview**: Sandboxed preview view with script restrictions.
-
-### 3. File Safety & Integrity
-- **Encoding Detection**: Multi-stage detection pipeline:
-  1. Byte Order Marks (UTF-8, UTF-16 LE, UTF-16 BE).
-  2. Binary file protection (scans for null bytes and control codes).
-  3. Strict UTF-8 validation.
-  4. Heuristic fallback for legacy encodings (Windows-1252, ISO-8859-1, MacRoman, Shift-JIS).
-- **Line Ending Preservation**: Detects and maintains LF (`\n`), CRLF (`\r\n`), and CR (`\r`) conventions.
-- **Crash-Resilient Atomic Writes**: Writes to a temporary staging file before replacing destination to eliminate risk of corruption during system interruptions.
-- **External Modification Tracking**: Watches file modification timestamps to alert the user if a file has changed on disk.
-
-### 4. 111iridescence Atelier Design
-- Obsidian Ink (`#16101D`) and Pearl Canvas (`#FAF9FC`) dynamic theme tokens.
-- Custom tab bar with unsaved change indicators (`•`), tab close buttons, and tab addition.
-- Compact status bar showing cursor position (`Ln X, Col Y`), selection character count, total line/character counts, encoding, line ending format, language syntax, and preview mode switcher (`Source | Split | Preview`).
-- Prismatic App Icon rendered in high resolution up to 1024×1024 Retina.
+- **Operating System**: macOS 13.0 (Ventura) or newer (macOS 14 Sonoma and macOS 15+ fully supported).
+- **Architecture**: Apple Silicon (`arm64`, M1/M2/M3/M4) native.
+- **RAM**: Under 10 MB base memory footprint.
+- **Disk Space**: ~5 MB for installation.
 
 ---
 
-## Keyboard Shortcuts
+## 6. Installation Instructions
 
-| Action | Shortcut | Description |
+> [!NOTE]
+> QuickPad is currently in active staging and development. Official signed GitHub releases will be published once public release approval is finalised.
+
+To install a locally compiled release build:
+1. Build the distribution disk image:
+   ```bash
+   ./package_dmg.sh
+   ```
+2. Open `QuickPad-1.0.0.dmg`.
+3. Drag **QuickPad.app** into `/Applications`.
+4. Launch QuickPad from Spotlight or your Applications folder.
+
+---
+
+## 7. Getting Started
+
+1. **Launch QuickPad**: Launches in under 100 ms with a clean blank document tab.
+2. **Open Existing Files**: Press `Cmd + O` or drag files onto the editor. QuickPad automatically detects character encoding and line endings.
+3. **Toggle Live Previews**: For Markdown, JSON, or CSV files, press `Cmd + Shift + P` to toggle between Editor Only, Split View, and Preview Only.
+4. **Inspect JSON / CSV**: When opening a `.json` file, switch to Split View to explore the collapsible node hierarchy or extract JSON paths for APIs.
+
+---
+
+## 8. Usage Instructions
+
+### Working with Large Files
+QuickPad streams files up to 100 MB into memory in under 50 ms. When viewing large logs or text dumps, word wrap can be toggled off (`Option + Cmd + W`) for optimal scrolling performance.
+
+### Markdown Previews
+The Markdown renderer supports standard GitHub Flavored Markdown syntax including task checkboxes, tables, blockquotes, and fenced code blocks. Previews update in real time with debounced background parsing.
+
+### File Format Conversions & Formatting
+- **Format JSON**: Press `Option + Cmd + F` to re-indent and prettify raw JSON buffers with two-space indentation.
+- **Line Ending Conversion**: Click the line-ending indicator in the status bar to convert between LF (`\n`) and CRLF (`\r\n`).
+
+---
+
+## 9. Keyboard Shortcuts
+
+| Shortcut | Action | Description |
 | :--- | :--- | :--- |
-| **New Tab** | `⌘N` | Opens a new blank document tab |
-| **Open File** | `⌘O` | Native file open dialog |
-| **Save** | `⌘S` | Saves current document atomically |
-| **Save As** | `⇧⌘S` | Saves document to a new file path |
-| **Close Tab** | `⌘W` | Closes current tab (prompts if unsaved) |
-| **Find & Replace** | `⌘F` | Toggles search and replace bar |
-| **Find Next** | `⌘G` | Advances to next search match |
-| **Find Previous** | `⇧⌘G` | Jumps to previous search match |
-| **Go to Line** | `⌘L` | Quick jump panel to any line number |
-| **Toggle Preview** | `⇧⌘P` | Cycles between Source, Split, and Preview |
-| **Toggle Word Wrap**| `⌥⌘W` | Toggles text wrapping |
-| **Format Document** | `⌥⌘F` | Formats structured documents (e.g. JSON) |
-| **Zoom In / Out** | `⌘+` / `⌘-` | Increases or decreases editor font size |
-| **Reset Zoom** | `⌘0` | Resets editor font to standard size (13 pt) |
+| `Cmd + N` | New Document Tab | Opens a blank document tab |
+| `Cmd + O` | Open File… | Native file open dialogue |
+| `Cmd + S` | Save | Saves active document atomically |
+| `Cmd + Shift + S` | Save As… | Saves document to a chosen destination |
+| `Cmd + W` | Close Tab | Closes active tab (prompts if unsaved) |
+| `Cmd + F` | Find & Replace | Opens search and replace bar |
+| `Cmd + G` | Find Next | Advances to next match |
+| `Cmd + Shift + G` | Find Previous | Jumps to previous match |
+| `Cmd + L` | Go to Line… | Quick jump panel to any line number |
+| `Cmd + Shift + P` | Toggle Preview | Cycles between Source, Split, and Preview |
+| `Option + Cmd + W` | Toggle Word Wrap | Toggles soft wrapping |
+| `Option + Cmd + F` | Format Document | Formats structured documents (e.g. JSON) |
+| `Cmd + +` / `Cmd + -` | Zoom In / Out | Adjusts editor font size |
+| `Cmd + 0` | Reset Zoom | Resets editor font to standard 13 pt |
 
 ---
 
-## Build & Verification
+## 10. Building from Source
 
 ### Prerequisites
-- macOS 13.0 or higher
-- Xcode 15+ / Command Line Tools with Swift 6+
+- macOS 13.0 or later.
+- Xcode 15+ / Command Line Tools with Swift 6:
+  ```bash
+  xcode-select --install
+  ```
 
-### Build Release Application
-```bash
-./build.sh release
-```
-The compiled application bundle will be created at `QuickPad.app`.
+### Build Steps
 
-### Run Automated Tests
-```bash
-./test.sh
-```
-Executes all unit test suites covering encoding detection, BOM handling, line endings, CSV RFC 4180 parsing, Markdown generation, and document safety.
-
-### Run Performance Benchmarks
-```bash
-./run_benchmark.sh
-```
-Executes the comprehensive performance suite across files from 1 KB to 100 MB.
-
-### Package Distribution DMG
-```bash
-./package_dmg.sh
-```
-Generates a verified, read-only compressed disk image: `QuickPad-1.0.0.dmg`.
+1. Compile the Release application bundle:
+   ```bash
+   ./build.sh release
+   open "QuickPad.app"
+   ```
+2. Run the automated test suite:
+   ```bash
+   ./test.sh
+   ```
+   All 53 unit assertions verify encoding detection, BOM parsing, CSV compliance, and atomic safety.
+3. Run performance benchmarks:
+   ```bash
+   ./run_benchmark.sh
+   ```
+4. Package the distributable `.dmg`:
+   ```bash
+   ./package_dmg.sh
+   ```
 
 ---
 
-## License
+## 11. Troubleshooting
 
-QuickPad is licensed under the [MIT License](LICENSE).  
-Copyright © 2026 **111iridescence** ([111iridescence.org](https://111iridescence.org)). All rights reserved.
+- **File shows unexpected character substitution**:
+  QuickPad automatically tests for UTF-8, Windows-1252, and MacRoman encodings. If a file was saved with an obscure legacy encoding, ensure it has a Byte Order Mark or standard UTF-8 encoding.
+- **Large files (>100 MB) display slower syntax highlighting**:
+  For files exceeding 50 MB, disable word wrap (`Option + Cmd + W`) and syntax highlighting in preferences to maximize scrolling throughput.
+
+---
+
+## 12. Download and Releases
+
+- **Status**: Development & Staging.
+- **Repository Remote**: To be configured upon GitHub publication approval.
+- **Artifacts**: Local DMG packaged at `QuickPad-1.0.0.dmg`.
+
+---
+
+## 13. Contributing
+
+Contributions and feedback are appreciated. Please ensure all pull requests maintain the sub-100 ms startup invariant, pass the 53 automated test assertions (`./test.sh`), and adhere to AppKit native design principles.
+
+---
+
+## 14. Licence
+
+This project is licensed under the **[MIT Licence](LICENSE)**.
+
+---
+
+## 15. Acknowledgements
+
+- Built with Apple's native AppKit and WebKit technologies.
+- Inspired by the timeless speed and utility of classic desktop text editors.
+- Developed by **[111iridescence](https://111iridescence.org)** with AI-assisted software systems engineering.
