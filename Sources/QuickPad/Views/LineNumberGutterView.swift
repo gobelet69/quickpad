@@ -10,6 +10,7 @@ public final class LineNumberGutterView: NSView {
         self.textView = textView
         super.init(frame: .zero)
         self.wantsLayer = true
+        self.layer?.masksToBounds = true
         self.layer?.backgroundColor = Theme.gutterBackground.cgColor
     }
 
@@ -40,15 +41,18 @@ public final class LineNumberGutterView: NSView {
             return
         }
 
-        // Draw gutter background
-        Theme.gutterBackground.setFill()
-        dirtyRect.fill()
+        let gutterRect = bounds.intersection(dirtyRect)
+        guard !gutterRect.isEmpty else { return }
 
-        // Draw separator border
+        // Draw gutter background within bounds only
+        Theme.gutterBackground.setFill()
+        gutterRect.fill()
+
+        // Draw separator border within bounds
         Theme.border.setStroke()
         let borderPath = NSBezierPath()
-        borderPath.move(to: NSPoint(x: bounds.maxX - 0.5, y: dirtyRect.minY))
-        borderPath.line(to: NSPoint(x: bounds.maxX - 0.5, y: dirtyRect.maxY))
+        borderPath.move(to: NSPoint(x: bounds.maxX - 0.5, y: bounds.minY))
+        borderPath.line(to: NSPoint(x: bounds.maxX - 0.5, y: bounds.maxY))
         borderPath.lineWidth = 1.0
         borderPath.stroke()
 
@@ -104,7 +108,7 @@ public final class LineNumberGutterView: NSView {
                 let y = rect.minY + (rect.height - size.height) / 2.0 - visibleRect.minY + textView.textContainerInset.height
                 let x = bounds.width - size.width - 8.0
 
-                if y >= dirtyRect.minY - size.height && y <= dirtyRect.maxY {
+                if y >= bounds.minY - size.height && y <= bounds.maxY {
                     (numStr as NSString).draw(at: NSPoint(x: x, y: y), withAttributes: attrs)
                 }
                 lineNumber += 1

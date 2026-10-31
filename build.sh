@@ -6,7 +6,14 @@ BUNDLE="${APP}.app"
 BUILD_CONFIG="${1:-release}"
 OUTPUT_BIN="/tmp/${APP}Bin"
 
+echo "▸ Staging source files in /tmp to prevent iCloud coordination locks…"
+BUILD_STAGE="/tmp/QuickPadBuildStage"
+rm -rf "${BUILD_STAGE}"
+mkdir -p "${BUILD_STAGE}"
+cp -R Sources "${BUILD_STAGE}/"
+
 echo "▸ Compiling ${APP} (${BUILD_CONFIG})…"
+cd "${BUILD_STAGE}"
 SWIFT_FILES=$(find Sources/QuickPad -name "*.swift")
 
 if [ "$BUILD_CONFIG" = "release" ]; then
@@ -14,6 +21,9 @@ if [ "$BUILD_CONFIG" = "release" ]; then
 else
     swiftc -g -Onone -target arm64-apple-macos13.0 -sdk $(xcrun --show-sdk-path) -framework AppKit -framework WebKit ${SWIFT_FILES} -o "${OUTPUT_BIN}"
 fi
+
+cd - >/dev/null
+rm -rf "${BUILD_STAGE}"
 
 echo "▸ Packaging ${BUNDLE}…"
 rm -rf "${BUNDLE}"

@@ -91,7 +91,10 @@ public final class Document {
             language: language,
             isBinary: result.isBinary
         )
-        // If file supports preview by default, we can initialize mode according to format or keep source
+        // Automatically enable split preview for formats that support it (Markdown, JSON, CSV, etc.)
+        if language.previewKind != nil {
+            doc.previewMode = .split
+        }
         return doc
     }
 

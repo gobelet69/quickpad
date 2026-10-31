@@ -45,13 +45,12 @@ public final class SyntaxHighlighter {
 
         guard effectiveRange.length > 0 && NSMaxRange(effectiveRange) <= totalLength else { return }
 
+        storage.beginEditing()
         // Reset default foreground and font
         storage.addAttributes([
             .foregroundColor: textColor,
             .font: font
         ], range: effectiveRange)
-
-        guard !rules.isEmpty else { return }
 
         let fullString = storage.string
         for rule in rules {
@@ -60,5 +59,6 @@ public final class SyntaxHighlighter {
                 storage.addAttribute(.foregroundColor, value: rule.color, range: matchRange)
             }
         }
+        storage.endEditing()
     }
 }

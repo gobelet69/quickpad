@@ -8,6 +8,8 @@ public protocol EditorViewDelegate: AnyObject {
 public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoToLineDelegate {
     public weak var delegate: EditorViewDelegate?
 
+    public override var isFlipped: Bool { true }
+
     private(set) var scrollView: NSScrollView!
     private(set) var textView: NSTextView!
     private(set) var gutterView: LineNumberGutterView!
@@ -42,6 +44,7 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
 
     private func setupUI() {
         wantsLayer = true
+        layer?.masksToBounds = true
         layer?.backgroundColor = Theme.background.cgColor
 
         // 1. Text View & Scroll View
@@ -61,6 +64,10 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
         textView.insertionPointColor = Theme.foreground
         textView.selectedTextAttributes = [
             .backgroundColor: Theme.selection
+        ]
+        textView.typingAttributes = [
+            .font: Theme.editorFont,
+            .foregroundColor: Theme.foreground
         ]
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
@@ -92,15 +99,15 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
         addSubview(gutterView)
 
         // 3. Find Bar (hidden by default)
-        findBarView = FindBarView(frame: NSRect(x: 0, y: bounds.height - 70, width: bounds.width, height: 70))
-        findBarView.autoresizingMask = [.width, .minYMargin]
+        findBarView = FindBarView(frame: NSRect(x: 0, y: 0, width: bounds.width, height: 70))
+        findBarView.autoresizingMask = [.width, .maxYMargin]
         findBarView.delegate = self
         findBarView.isHidden = true
         addSubview(findBarView)
 
         // 4. Go To Line View (hidden by default)
-        goToLineView = GoToLineView(frame: NSRect(x: 0, y: bounds.height - 36, width: bounds.width, height: 36))
-        goToLineView.autoresizingMask = [.width, .minYMargin]
+        goToLineView = GoToLineView(frame: NSRect(x: 0, y: 0, width: bounds.width, height: 36))
+        goToLineView.autoresizingMask = [.width, .maxYMargin]
         goToLineView.delegate = self
         goToLineView.isHidden = true
         addSubview(goToLineView)
@@ -114,7 +121,7 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
         if isLineWrappingEnabled {
             scrollView.hasHorizontalScroller = false
             textContainer.widthTracksTextView = true
-            textContainer.containerSize = NSSize(width: scrollView.contentSize.width - gutterView.frame.width, height: CGFloat.greatestFiniteMagnitude)
+            textContainer.containerSize = NSSize(width: scrollView.contentSize.width, height: CGFloat.greatestFiniteMagnitude)
             textView.isHorizontallyResizable = false
         } else {
             scrollView.hasHorizontalScroller = true
@@ -132,16 +139,16 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
     private func updateGutterLayout() {
         gutterView.updateWidth()
         let gutterWidth = gutterView.frame.width
-        gutterView.frame = NSRect(x: 0, y: 0, width: gutterWidth, height: bounds.height)
-
         let topInset: CGFloat = (findBarView.isHidden ? 0 : 70) + (goToLineView.isHidden ? 0 : 36)
-        scrollView.frame = NSRect(x: gutterWidth, y: 0, width: max(0, bounds.width - gutterWidth), height: max(0, bounds.height - topInset))
+
+        gutterView.frame = NSRect(x: 0, y: topInset, width: gutterWidth, height: max(0, bounds.height - topInset))
+        scrollView.frame = NSRect(x: gutterWidth, y: topInset, width: max(0, bounds.width - gutterWidth), height: max(0, bounds.height - topInset))
 
         if !findBarView.isHidden {
-            findBarView.frame = NSRect(x: 0, y: bounds.height - 70, width: bounds.width, height: 70)
+            findBarView.frame = NSRect(x: 0, y: 0, width: bounds.width, height: 70)
         }
         if !goToLineView.isHidden {
-            let y = findBarView.isHidden ? bounds.height - 36 : bounds.height - 106
+            let y: CGFloat = findBarView.isHidden ? 0 : 70
             goToLineView.frame = NSRect(x: 0, y: y, width: bounds.width, height: 36)
         }
     }
@@ -172,6 +179,8 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
         suppressChangeNotification = false
         updateGutterLayout()
         triggerHighlight(full: true)
+        textView.needsDisplay = true
+        gutterView.needsDisplay = true
         updateCursorStats()
     }
 
@@ -245,6 +254,7 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
                 font: Theme.editorFont,
                 textColor: Theme.foreground
             )
+            self.textView.needsDisplay = true
         }
         highlightWorkItem = workItem
         if delay > 0 {
