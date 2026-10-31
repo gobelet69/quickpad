@@ -80,25 +80,29 @@ $$\text{Performance} > \text{Reliability} > \text{Simplicity} > \text{Usability}
 ## 5. System Requirements
 
 - **Operating System**: macOS 13.0 (Ventura) or newer (macOS 14 Sonoma and macOS 15+ fully supported).
-- **Architecture**: Apple Silicon (`arm64`, M1/M2/M3/M4) native.
+- **Architecture**: Universal 2 binary natively supporting both **Apple Silicon** (`arm64`) and **Intel** (`x86_64`).
 - **RAM**: Under 10 MB base memory footprint.
 - **Disk Space**: ~5 MB for installation.
+- **Privileges**: Standard user account. QuickPad does not require administrator privileges or root access.
+- **Sandboxing**: Runs as a standard macOS user-space application (non-sandboxed) to allow opening and atomic-saving files across arbitrary user-specified directories, external drives, and developer paths without sandbox containment barriers.
 
 ---
 
 ## 6. Installation Instructions
 
-> [!NOTE]
-> QuickPad is currently in active staging and development. Official signed GitHub releases will be published once public release approval is finalised.
-
-To install a locally compiled release build:
-1. Build the distribution disk image:
-   ```bash
-   ./package_dmg.sh
-   ```
-2. Open `QuickPad-1.0.0.dmg`.
-3. Drag **QuickPad.app** into `/Applications`.
-4. Launch QuickPad from Spotlight or your Applications folder.
+1. Download the latest Universal DMG from the **[GitHub Releases](https://github.com/gobelet69/quickpad/releases/latest)** page:
+   - `QuickPad-1.0.0-universal.dmg`
+2. Open the downloaded `.dmg` disk image.
+3. Drag **QuickPad.app** into your `/Applications` directory.
+4. Launch **QuickPad** from Spotlight or `/Applications`.
+5. **macOS Gatekeeper Verification (Non-Notarised Builds)**:
+   Because releases are ad-hoc signed without an Apple Developer ID subscription, macOS Gatekeeper may present a dialog on first launch (*"QuickPad cannot be opened because Apple cannot check it for malicious software"*). To safely open the application:
+   - **Via Finder**: Right-click (or Control-click) **QuickPad.app** in `/Applications`, choose **Open**, and click **Open** in the confirmation alert. Alternatively, navigate to **System Settings → Privacy & Security** and click **Open Anyway**.
+   - **Via Terminal** (optional): Clear the quarantine extended attribute:
+     ```bash
+     xattr -d com.apple.quarantine "/Applications/QuickPad.app"
+     ```
+   Once opened, macOS permanently remembers your choice, and subsequent launches start instantly without warnings.
 
 ---
 
