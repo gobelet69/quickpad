@@ -1,16 +1,23 @@
 import AppKit
 
 public enum Theme {
-    // 111iridescence Brand Tokens
+    // 111iridescence v2.1 Brand & Homepage Matrix Tokens
     public static let ink = NSColor(srgbRed: 0x16/255.0, green: 0x10/255.0, blue: 0x1D/255.0, alpha: 1.0)
     public static let paper = NSColor(srgbRed: 0xFA/255.0, green: 0xF9/255.0, blue: 0xFC/255.0, alpha: 1.0)
-    public static let darkBackground = NSColor(srgbRed: 0x18/255.0, green: 0x13/255.0, blue: 0x1E/255.0, alpha: 1.0)
-    public static let darkSurface = NSColor(srgbRed: 0x21/255.0, green: 0x1B/255.0, blue: 0x28/255.0, alpha: 1.0)
+    public static let darkBackground = NSColor(srgbRed: 0x16/255.0, green: 0x10/255.0, blue: 0x1D/255.0, alpha: 1.0)
+    public static let darkSurface = NSColor(srgbRed: 0x20/255.0, green: 0x18/255.0, blue: 0x2B/255.0, alpha: 1.0)
 
-    public static let violet = NSColor(srgbRed: 0xA8/255.0, green: 0x55/255.0, blue: 0xF7/255.0, alpha: 1.0)
+    public static let deepViolet = NSColor(srgbRed: 0x70/255.0, green: 0x2E/255.0, blue: 0xE4/255.0, alpha: 1.0)
+    public static let ultraviolet = NSColor(srgbRed: 0x8A/255.0, green: 0x38/255.0, blue: 0xF5/255.0, alpha: 1.0)
+    public static let electricBlue = NSColor(srgbRed: 0x22/255.0, green: 0x66/255.0, blue: 0xF2/255.0, alpha: 1.0)
+    public static let luminousCyan = NSColor(srgbRed: 0x0C/255.0, green: 0xC0/255.0, blue: 0xE8/255.0, alpha: 1.0)
+    public static let controlledTurquoise = NSColor(srgbRed: 0x12/255.0, green: 0xCC/255.0, blue: 0xB8/255.0, alpha: 1.0)
+    public static let subtleMagenta = NSColor(srgbRed: 0xDC/255.0, green: 0x3E/255.0, blue: 0xA0/255.0, alpha: 1.0)
+
+    public static let violet = NSColor(srgbRed: 0x8A/255.0, green: 0x38/255.0, blue: 0xF5/255.0, alpha: 1.0)
     public static let coral = NSColor(srgbRed: 0xEE/255.0, green: 0x76/255.0, blue: 0x6A/255.0, alpha: 1.0)
     public static let presence = NSColor(srgbRed: 0x34/255.0, green: 0xD3/255.0, blue: 0x99/255.0, alpha: 1.0)
-    public static let blue = NSColor(srgbRed: 0x38/255.0, green: 0x80/255.0, blue: 0xDC/255.0, alpha: 1.0)
+    public static let blue = NSColor(srgbRed: 0x22/255.0, green: 0x66/255.0, blue: 0xF2/255.0, alpha: 1.0)
     public static let amber = NSColor(srgbRed: 0xF5/255.0, green: 0x9E/255.0, blue: 0x0B/255.0, alpha: 1.0)
 
     public static func isDark(_ appearance: NSAppearance? = nil) -> Bool {
