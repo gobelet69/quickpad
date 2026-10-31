@@ -26,14 +26,6 @@ $$\text{Performance} > \text{Reliability} > \text{Simplicity} > \text{Usability}
 
 ---
 
-## Architecture & Provenance
-
-QuickPad is a **100% original implementation** created from scratch by **111iridescence**. It is **not a fork** of CotEditor, CodeEdit, LiteEdit, or any existing text editor codebase.
-
-Every single component—including the AppKit TextKit editing engine, line-number gutter, syntax highlighting subsystem, encoding detector, GFM parser, synchronized preview selection bridge, and virtualized inspection views—has been built independently from first principles in pure Swift 6 and native macOS AppKit. It contains zero Electron/Node overhead, zero third-party dependencies, and zero legacy bloat.
-
----
-
 ## Measured Performance Benchmarks
 
 *All benchmarks measured on Apple Silicon macOS 14+ (arm64, Release `-O` build).*
