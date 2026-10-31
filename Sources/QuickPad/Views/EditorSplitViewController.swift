@@ -39,6 +39,9 @@ public final class EditorSplitViewController: NSViewController, NSSplitViewDeleg
         previewContainerView.onFormatJSONRequested = { [weak self] in
             self?.formatCurrentJSON()
         }
+        previewContainerView.onTextSelected = { [weak self] selectedText in
+            self?.editorView.selectText(matching: selectedText)
+        }
 
         splitView.addSubview(editorView)
         splitView.addSubview(previewContainerView)

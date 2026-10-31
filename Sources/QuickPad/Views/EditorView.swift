@@ -389,4 +389,48 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
         textView.string = replaced
         textDidChange(Notification(name: NSText.didChangeNotification))
     }
+
+    // MARK: - Synchronized Preview Selection
+
+    public func selectText(matching query: String) {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let content = textView.string as NSString
+        guard content.length > 0 else { return }
+
+        // 1. Try exact match first
+        var foundRange = content.range(of: trimmed, options: [.caseInsensitive])
+
+        // 2. If not found, try matching first non-empty line
+        if foundRange.location == NSNotFound {
+            let lines = trimmed.components(separatedBy: "\n")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+            if let firstLine = lines.first {
+                foundRange = content.range(of: firstLine, options: [.caseInsensitive])
+            }
+        }
+
+        // 3. If still not found, try stripping common markdown tokens
+        if foundRange.location == NSNotFound {
+            let clean = trimmed.replacingOccurrences(of: "**", with: "")
+                               .replacingOccurrences(of: "*", with: "")
+                               .replacingOccurrences(of: "`", with: "")
+                               .replacingOccurrences(of: "#", with: "")
+                               .trimmingCharacters(in: .whitespaces)
+            if !clean.isEmpty {
+                foundRange = content.range(of: clean, options: [.caseInsensitive])
+            }
+        }
+
+        guard foundRange.location != NSNotFound else { return }
+
+        suppressChangeNotification = true
+        textView.setSelectedRange(foundRange)
+        textView.scrollRangeToVisible(foundRange)
+        textView.showFindIndicator(for: foundRange)
+        suppressChangeNotification = false
+        updateCursorStats()
+    }
 }

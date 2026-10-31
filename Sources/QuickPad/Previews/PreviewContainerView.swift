@@ -9,6 +9,7 @@ public final class PreviewContainerView: NSView {
     private var emptyPlaceholderLabel: NSTextField!
 
     public var onFormatJSONRequested: (() -> Void)?
+    public var onTextSelected: ((String) -> Void)?
 
     public override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -51,6 +52,9 @@ public final class PreviewContainerView: NSView {
             if markdownView == nil {
                 let mv = MarkdownPreviewView(frame: bounds)
                 mv.autoresizingMask = [.width, .height]
+                mv.onTextSelected = { [weak self] text in
+                    self?.onTextSelected?(text)
+                }
                 markdownView = mv
             }
             showView(markdownView)
@@ -90,6 +94,9 @@ public final class PreviewContainerView: NSView {
             if htmlView == nil {
                 let hv = HTMLPreviewView(frame: bounds)
                 hv.autoresizingMask = [.width, .height]
+                hv.onTextSelected = { [weak self] text in
+                    self?.onTextSelected?(text)
+                }
                 htmlView = hv
             }
             showView(htmlView)

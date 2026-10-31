@@ -1,10 +1,27 @@
 import AppKit
 import WebKit
 
+private final class MarkdownSelectionBridge: NSObject, WKScriptMessageHandler {
+    weak var owner: MarkdownPreviewView?
+
+    init(owner: MarkdownPreviewView) {
+        self.owner = owner
+        super.init()
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "quickpadSelection", let text = message.body as? String {
+            owner?.onTextSelected?(text)
+        }
+    }
+}
+
 public final class MarkdownPreviewView: NSView {
     private var webView: WKWebView!
     private var lastRenderedMarkdown: String = ""
     private var renderWorkItem: DispatchWorkItem?
+
+    public var onTextSelected: ((String) -> Void)?
 
     public override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -19,8 +36,13 @@ public final class MarkdownPreviewView: NSView {
     private func setupWebView() {
         let config = WKWebViewConfiguration()
         let prefs = WKWebpagePreferences()
-        prefs.allowsContentJavaScript = false // Strictly disable JS for security
+        prefs.allowsContentJavaScript = true
         config.defaultWebpagePreferences = prefs
+
+        let contentController = WKUserContentController()
+        let bridge = MarkdownSelectionBridge(owner: self)
+        contentController.add(bridge, name: "quickpadSelection")
+        config.userContentController = contentController
 
         webView = WKWebView(frame: bounds, configuration: config)
         webView.autoresizingMask = [.width, .height]

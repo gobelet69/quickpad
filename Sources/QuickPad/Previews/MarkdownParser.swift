@@ -42,7 +42,7 @@ public struct MarkdownParser {
                 let tag = idx == 0 ? "th" : "td"
                 tableHTML += "  <tr>\n"
                 for cell in filteredCells {
-                    tableHTML += "    <\(tag)>\(escapeHTML(cell))</\(tag)>\n"
+                    tableHTML += "    <\(tag)>\(parseInline(cell))</\(tag)>\n"
                 }
                 tableHTML += "  </tr>\n"
             }
@@ -315,9 +315,28 @@ public struct MarkdownParser {
             margin: 0.6em 0;
           }
           li { margin: 0.3em 0; }
+          strong, b {
+            font-weight: 700;
+            color: \(fg);
+          }
+          em, i {
+            font-style: italic;
+          }
           .task-list { list-style: none; padding-left: 4px; }
           .task-list-item { display: flex; align-items: baseline; gap: 8px; }
         </style>
+        <script>
+          document.addEventListener('selectionchange', function() {
+            clearTimeout(window.__qpSelTimer);
+            window.__qpSelTimer = setTimeout(function() {
+              var sel = window.getSelection();
+              var text = sel ? sel.toString().trim() : '';
+              if (text.length > 0 && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.quickpadSelection) {
+                window.webkit.messageHandlers.quickpadSelection.postMessage(text);
+              }
+            }, 60);
+          });
+        </script>
         </head>
         <body>
         \(body)

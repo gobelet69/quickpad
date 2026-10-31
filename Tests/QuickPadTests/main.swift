@@ -122,6 +122,7 @@ let mdSample = """
 
 | Feature | Status |
 | --- | --- |
+| **Bold Feature** | *Italic Status* |
 | Previews | Supported |
 
 ```swift
@@ -132,6 +133,8 @@ let html = MarkdownParser.toHTML(markdown: mdSample, isDark: true)
 assertTrue(html.contains("<h1>QuickPad</h1>"))
 assertTrue(html.contains("<li class=\"task-list-item\">"))
 assertTrue(html.contains("<table>"))
+assertTrue(html.contains("<td><strong>Bold Feature</strong></td>"))
+assertTrue(html.contains("<td><em>Italic Status</em></td>"))
 assertTrue(html.contains("<code class=\"language-swift\">let editor = &quot;ultra-fast&quot;</code>"))
 
 // 5. Language Detection & Syntax Highlighter
