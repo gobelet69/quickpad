@@ -181,7 +181,7 @@ do {
 }
 assertTrue(caughtError, "Binary document write should be safely blocked")
 
-// Verify MASTER directory safety protection
+// Verify MASTER directory safety protection (including case variations and relative paths)
 let homeURL = FileManager.default.homeDirectoryForCurrentUser
 let masterProtectedURL = homeURL.appendingPathComponent("Documents/MASTER/forbidden.txt")
 let masterDoc = Document(fileURL: masterProtectedURL, content: "prohibited write")
@@ -193,11 +193,19 @@ do {
 }
 assertTrue(caughtMasterError, "Saving to /Documents/MASTER must be strictly prohibited")
 
-// Verify Markdown XSS link sanitization
+// Case-insensitive and relative path boundary checks
+assertTrue(Document.isProtectedDirectory(url: homeURL.appendingPathComponent("documents/master/secret.txt")), "Lowercase documents/master must be blocked")
+assertTrue(Document.isProtectedDirectory(url: homeURL.appendingPathComponent("Documents/Master/nested/file.txt")), "Mixed-case Documents/Master must be blocked")
+assertTrue(Document.isProtectedDirectory(url: homeURL.appendingPathComponent("Documents/Other/../MASTER/file.txt")), "Relative /../MASTER must be blocked")
+assertTrue(Document.isProtectedDirectory(url: homeURL.appendingPathComponent("Documents/MASTER")), "Direct directory path must be blocked")
+assertFalse(Document.isProtectedDirectory(url: homeURL.appendingPathComponent("Documents/Masterpiece/safe.txt")), "Non-master prefixes must be allowed")
+
+// Verify Markdown XSS link sanitization and CSP protection
 let maliciousMarkdown = "[Click me](javascript:alert(1)) and [Safe Link](https://111iridescence.org)"
 let sanitizedHTML = MarkdownParser.toHTML(markdown: maliciousMarkdown, isDark: false)
 assertFalse(sanitizedHTML.contains("href=\"javascript:"), "javascript: URIs must be sanitized")
 assertTrue(sanitizedHTML.contains("href=\"https://111iridescence.org\""), "https URLs must be preserved")
+assertTrue(sanitizedHTML.contains("Content-Security-Policy"), "Strict Content Security Policy meta tag must be present")
 
 try? FileManager.default.removeItem(at: tempFile)
 

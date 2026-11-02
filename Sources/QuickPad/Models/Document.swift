@@ -153,10 +153,15 @@ public final class Document {
     }
 
     public static func isProtectedDirectory(url: URL) -> Bool {
-        let path = url.path
-        let canonical = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
-        return path.contains("/Documents/MASTER/") || path.hasSuffix("/Documents/MASTER")
-            || canonical.contains("/Documents/MASTER/") || canonical.hasSuffix("/Documents/MASTER")
+        let raw = url.path.lowercased()
+        let standardized = url.standardizedFileURL.path.lowercased()
+        let canonical = url.resolvingSymlinksInPath().path.lowercased()
+        for p in [raw, standardized, canonical] {
+            if p.contains("/documents/master/") || p.hasSuffix("/documents/master") {
+                return true
+            }
+        }
+        return false
     }
 
     private static func modificationDate(for url: URL) -> Date? {
