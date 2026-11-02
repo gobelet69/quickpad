@@ -6,7 +6,7 @@ cd "${SCRIPT_DIR}"
 
 APP_NAME="QuickPad"
 BUNDLE_ID="org.111iridescence.quickpad"
-VERSION="1.0.0"
+VERSION="1.0.1"
 UNIVERSAL="${UNIVERSAL:-0}"
 
 if [ "$UNIVERSAL" = "1" ]; then
