@@ -47,6 +47,7 @@ public final class MarkdownPreviewView: NSView {
         webView = WKWebView(frame: bounds, configuration: config)
         webView.autoresizingMask = [.width, .height]
         webView.setValue(false, forKey: "drawsBackground") // Transparent background until loaded
+        webView.navigationDelegate = self
         addSubview(webView)
     }
 
@@ -81,5 +82,19 @@ public final class MarkdownPreviewView: NSView {
         let current = lastRenderedMarkdown
         lastRenderedMarkdown = ""
         update(markdown: current, debounce: false)
+    }
+}
+
+extension MarkdownPreviewView: WKNavigationDelegate {
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if navigationAction.navigationType == .linkActivated, let url = navigationAction.request.url {
+            let scheme = url.scheme?.lowercased()
+            if scheme == "http" || scheme == "https" || scheme == "mailto" {
+                NSWorkspace.shared.open(url)
+            }
+            decisionHandler(.cancel)
+            return
+        }
+        decisionHandler(.allow)
     }
 }

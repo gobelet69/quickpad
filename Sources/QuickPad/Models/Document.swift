@@ -123,6 +123,9 @@ public final class Document {
         guard let url = fileURL else {
             throw NSError(domain: "QuickPad", code: 400, userInfo: [NSLocalizedDescriptionKey: "No file URL specified for save"])
         }
+        guard !Self.isProtectedDirectory(url: url) else {
+            throw NSError(domain: "QuickPad", code: 403, userInfo: [NSLocalizedDescriptionKey: "Protected Directory: Saving directly into /Documents/MASTER is strictly forbidden."])
+        }
         guard !isBinary else {
             throw NSError(domain: "QuickPad", code: 403, userInfo: [NSLocalizedDescriptionKey: "Saving binary files is prevented to avoid file corruption"])
         }
@@ -147,6 +150,13 @@ public final class Document {
             self.encodingName = enc == .utf8 ? (hasBOM ? "UTF-8 with BOM" : "UTF-8") : "Custom"
         }
         try save()
+    }
+
+    public static func isProtectedDirectory(url: URL) -> Bool {
+        let path = url.path
+        let canonical = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+        return path.contains("/Documents/MASTER/") || path.hasSuffix("/Documents/MASTER")
+            || canonical.contains("/Documents/MASTER/") || canonical.hasSuffix("/Documents/MASTER")
     }
 
     private static func modificationDate(for url: URL) -> Date? {

@@ -207,12 +207,26 @@ public struct MarkdownParser {
             options: .regularExpression
         )
 
-        // Links [title](url)
-        str = str.replacingOccurrences(
-            of: #"\[([^\]]+)\]\(([^)]+)\)"#,
-            with: "<a href=\"$2\" target=\"_blank\">$1</a>",
-            options: .regularExpression
-        )
+        // Links [title](url) - sanitize schemes to prevent XSS (block javascript:, data:, etc.)
+        let linkRegex = try? NSRegularExpression(pattern: #"\[([^\]]+)\]\(([^)]+)\)"#)
+        if let linkRegex = linkRegex {
+            let nsStr = str as NSString
+            let matches = linkRegex.matches(in: str, range: NSRange(location: 0, length: nsStr.length))
+            for match in matches.reversed() {
+                let title = nsStr.substring(with: match.range(at: 1))
+                let rawUrl = nsStr.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespacesAndNewlines)
+                let lowerUrl = rawUrl.lowercased()
+                let isSafe = !lowerUrl.hasPrefix("javascript:") && !lowerUrl.hasPrefix("vbscript:") && !lowerUrl.hasPrefix("data:")
+                let replacement: String
+                if isSafe {
+                    replacement = "<a href=\"\(rawUrl)\" target=\"_blank\" rel=\"noopener noreferrer\">\(title)</a>"
+                } else {
+                    replacement = "\(title) [unsafe link]"
+                }
+                let fullRange = match.range(at: 0)
+                str = (str as NSString).replacingCharacters(in: fullRange, with: replacement)
+            }
+        }
 
         return str
     }

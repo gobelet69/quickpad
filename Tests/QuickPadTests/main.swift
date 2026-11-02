@@ -180,6 +180,25 @@ do {
     caughtError = true
 }
 assertTrue(caughtError, "Binary document write should be safely blocked")
+
+// Verify MASTER directory safety protection
+let homeURL = FileManager.default.homeDirectoryForCurrentUser
+let masterProtectedURL = homeURL.appendingPathComponent("Documents/MASTER/forbidden.txt")
+let masterDoc = Document(fileURL: masterProtectedURL, content: "prohibited write")
+var caughtMasterError = false
+do {
+    try masterDoc.save()
+} catch {
+    caughtMasterError = true
+}
+assertTrue(caughtMasterError, "Saving to /Documents/MASTER must be strictly prohibited")
+
+// Verify Markdown XSS link sanitization
+let maliciousMarkdown = "[Click me](javascript:alert(1)) and [Safe Link](https://111iridescence.org)"
+let sanitizedHTML = MarkdownParser.toHTML(markdown: maliciousMarkdown, isDark: false)
+assertFalse(sanitizedHTML.contains("href=\"javascript:"), "javascript: URIs must be sanitized")
+assertTrue(sanitizedHTML.contains("href=\"https://111iridescence.org\""), "https URLs must be preserved")
+
 try? FileManager.default.removeItem(at: tempFile)
 
 print("--------------------------------------------------")
