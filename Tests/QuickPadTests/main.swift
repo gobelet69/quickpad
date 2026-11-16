@@ -207,6 +207,27 @@ assertFalse(sanitizedHTML.contains("href=\"javascript:"), "javascript: URIs must
 assertTrue(sanitizedHTML.contains("href=\"https://111iridescence.org\""), "https URLs must be preserved")
 assertTrue(sanitizedHTML.contains("Content-Security-Policy"), "Strict Content Security Policy meta tag must be present")
 
+// Recovery keeps unsaved text separate from the original file.
+let sessionDir = FileManager.default.temporaryDirectory.appendingPathComponent("quickpad-session-\(UUID().uuidString)")
+let sessionStore = SessionStore(url: sessionDir.appendingPathComponent("session.json"))
+let draft = Document()
+draft.content = "unsaved draft"
+openedDoc.content = "unsaved edit"
+try! sessionStore.save(documents: [draft, openedDoc], activeIndex: 1)
+let restored = try! sessionStore.load()!
+assertEqual(restored.documents.count, 2)
+assertEqual(restored.activeIndex, 1)
+assertEqual(restored.documents[0].content, "unsaved draft")
+assertTrue(restored.documents[0].isModified)
+assertEqual(restored.documents[1].content, "unsaved edit")
+assertTrue(restored.documents[1].isModified)
+assertEqual(try! String(contentsOf: tempFile, encoding: .utf8), docContent)
+try! "external change".write(to: tempFile, atomically: true, encoding: .utf8)
+let conflicted = try! sessionStore.load()!
+assertTrue(conflicted.documents[1].recoveryDiskConflict)
+assertEqual(conflicted.documents[1].content, "unsaved edit")
+try? FileManager.default.removeItem(at: sessionDir)
+
 try? FileManager.default.removeItem(at: tempFile)
 
 print("--------------------------------------------------")

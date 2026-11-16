@@ -5,6 +5,8 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
     public private(set) var splitVC: EditorSplitViewController!
     public private(set) var statusBar: StatusBarView!
 
+    private var recoveryUnavailable = false
+    private var sessionReady = false
     public private(set) var documents: [Document] = []
     public private(set) var activeIndex: Int = 0
 
@@ -29,6 +31,19 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
         self.init(window: window)
         window.delegate = self
         setupLayout()
+        do {
+            if let session = try SessionStore.standard.load(), !session.documents.isEmpty {
+                documents = session.documents
+                switchToDocument(at: session.activeIndex)
+            }
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.messageText = "Could Not Restore QuickPad Session"
+            alert.informativeText = "Your recovery file was preserved. Resolve the problem before editing or quitting QuickPad.\n\n" + error.localizedDescription
+            recoveryUnavailable = true
+            alert.runModal()
+        }
+        sessionReady = true
     }
 
     private func setupLayout() {
@@ -79,6 +94,7 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
         updateWindowTitle()
         updateStatusBar()
         window?.makeFirstResponder(splitVC.editorView.textView)
+        _ = persistSession(showError: false)
     }
 
     public func updateWindowTitle() {
@@ -93,6 +109,23 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
     public func updateStatusBar() {
         guard let doc = currentDocument else { return }
         statusBar.update(document: doc, line: 1, col: 1, selectionLength: 0)
+    }
+
+    @discardableResult
+    public func persistSession(showError: Bool = true) -> Bool {
+        guard sessionReady, !recoveryUnavailable else { return false }
+        do {
+            try SessionStore.standard.save(documents: documents, activeIndex: activeIndex)
+            return true
+        } catch {
+            if showError {
+                let alert = NSAlert(error: error)
+                alert.messageText = "Could Not Save QuickPad Session"
+                alert.informativeText = "Your unsaved tabs could not be preserved. Save your work and try again.\n\n" + error.localizedDescription
+                alert.runModal()
+            }
+            return false
+        }
     }
 
     // MARK: - Document Actions
@@ -136,6 +169,7 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
                     switchToDocument(at: documents.count - 1)
                 }
                 NSDocumentController.shared.noteNewRecentDocumentURL(url)
+                _ = self.persistSession()
             } catch {
                 let alert = NSAlert()
                 alert.messageText = "Cannot Open File"
@@ -151,10 +185,20 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
         if doc.fileURL == nil {
             saveDocumentAs()
         } else {
+            if doc.recoveryDiskConflict {
+                let alert = NSAlert()
+                alert.messageText = "The file changed since this tab was saved."
+                alert.informativeText = "Saving will replace the current file with the recovered text. Use Save As to keep both versions."
+                alert.addButton(withTitle: "Cancel")
+                alert.addButton(withTitle: "Replace File")
+                guard alert.runModal() == .alertSecondButtonReturn else { return }
+            }
             do {
                 try doc.save()
+                doc.recoveryDiskConflict = false
                 tabBar.update(documents: documents, activeIndex: activeIndex)
                 updateWindowTitle()
+                _ = persistSession()
             } catch {
                 let alert = NSAlert()
                 alert.messageText = "Cannot Save File"
@@ -175,10 +219,12 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
             guard let self = self, response == .OK, let url = panel.url else { return }
             do {
                 try doc.save(to: url)
+                doc.recoveryDiskConflict = false
                 self.tabBar.update(documents: self.documents, activeIndex: self.activeIndex)
                 self.updateWindowTitle()
                 self.updateStatusBar()
                 self.splitVC.editorContentChanged()
+                _ = self.persistSession()
                 NSDocumentController.shared.noteNewRecentDocumentURL(url)
             } catch {
                 let alert = NSAlert()
@@ -205,6 +251,7 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
 
             let response = alert.runModal()
             if response == .alertFirstButtonReturn { // Save
+                switchToDocument(at: index)
                 saveDocument()
                 if doc.isModified { return } // Save cancelled or failed
             } else if response == .alertSecondButtonReturn { // Cancel
@@ -252,6 +299,7 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
         tabBar.update(documents: documents, activeIndex: activeIndex)
         updateWindowTitle()
         splitVC.editorContentChanged()
+        _ = persistSession(showError: false)
     }
 
     public func editorCursorMoved(_ editor: EditorView, line: Int, col: Int, selectionLength: Int) {
@@ -290,16 +338,7 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
     // MARK: - NSWindowDelegate
 
     public func windowShouldClose(_ sender: NSWindow) -> Bool {
-        for (i, doc) in documents.enumerated() {
-            if doc.isModified {
-                switchToDocument(at: i)
-                closeTab(at: i)
-                if documents.contains(where: { $0.id == doc.id && $0.isModified }) {
-                    return false // User cancelled
-                }
-            }
-        }
-        return true
+        persistSession()
     }
 
     public func windowDidBecomeKey(_ notification: Notification) {

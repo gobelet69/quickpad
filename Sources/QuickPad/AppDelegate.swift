@@ -1,4 +1,5 @@
 import AppKit
+import UniformTypeIdentifiers
 
 @objc public final class AppDelegate: NSObject, NSApplicationDelegate {
     public var windowController: MainWindowController?
@@ -6,47 +7,53 @@ import AppKit
     public func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.mainMenu = AppMenu.build()
 
-        let wc = MainWindowController()
-        self.windowController = wc
+        let wc = ensureWindowController()
         wc.showWindow(nil)
+        if !UserDefaults.standard.bool(forKey: "askedDefaultEditor") {
+            UserDefaults.standard.set(true, forKey: "askedDefaultEditor")
+            DispatchQueue.main.async { [weak self] in self?.offerDefaultEditor() }
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    private func ensureWindowController() -> MainWindowController {
+        if let wc = windowController { return wc }
+        let wc = MainWindowController()
+        windowController = wc
+        return wc
+    }
+
     public func application(_ sender: NSApplication, openFiles filenames: [String]) {
-        let urls = filenames.map { URL(fileURLWithPath: $0) }
-        if let wc = windowController {
-            wc.openURLs(urls)
-        } else {
-            let wc = MainWindowController()
-            self.windowController = wc
-            wc.openURLs(urls)
-            wc.showWindow(nil)
-        }
+        let wc = ensureWindowController()
+        wc.openURLs(filenames.map { URL(fileURLWithPath: $0) })
+        wc.showWindow(nil)
+        sender.reply(toOpenOrPrint: .success)
+    }
+
+    public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { ensureWindowController().showWindow(nil) }
+        return true
     }
 
     public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let wc = windowController else { return .terminateNow }
-        for (i, doc) in wc.documents.enumerated() {
-            if doc.isModified {
-                wc.switchToDocument(at: i)
-                let alert = NSAlert()
-                alert.messageText = "Do you want to save changes to \"\(doc.displayName)\"?"
-                alert.informativeText = "Your changes will be lost if you quit without saving."
-                alert.alertStyle = .warning
-                alert.addButton(withTitle: "Save")
-                alert.addButton(withTitle: "Cancel")
-                alert.addButton(withTitle: "Don't Save")
+        return wc.persistSession() ? .terminateNow : .terminateCancel
+    }
 
-                let res = alert.runModal()
-                if res == .alertFirstButtonReturn {
-                    wc.saveDocument()
-                    if doc.isModified { return .terminateCancel }
-                } else if res == .alertSecondButtonReturn {
-                    return .terminateCancel
-                }
+    @objc public func offerDefaultEditor() {
+        let alert = NSAlert()
+        alert.messageText = "Make QuickPad your default text editor?"
+        alert.informativeText = "macOS will ask you to confirm QuickPad as the default app for plain text files. Other file types keep their current app."
+        alert.addButton(withTitle: "Use QuickPad")
+        alert.addButton(withTitle: "Not Now")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        Task { @MainActor in
+            do {
+                try await NSWorkspace.shared.setDefaultApplication(at: Bundle.main.bundleURL, toOpen: UTType.plainText)
+            } catch {
+                NSAlert(error: error).runModal()
             }
         }
-        return .terminateNow
     }
 
     // MARK: - Menu Actions

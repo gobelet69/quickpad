@@ -11,6 +11,7 @@ public enum AppMenu {
         appMenuItem.submenu = appMenu
 
         appMenu.addItem(NSMenuItem(title: "About QuickPad", action: #selector(AppDelegate.showAbout), keyEquivalent: ""))
+        appMenu.addItem(NSMenuItem(title: "Make QuickPad Default Text Editor…", action: #selector(AppDelegate.offerDefaultEditor), keyEquivalent: ""))
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(NSMenuItem(title: "Hide QuickPad", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h"))
         let hideOthers = NSMenuItem(title: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")

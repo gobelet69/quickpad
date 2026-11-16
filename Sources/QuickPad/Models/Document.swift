@@ -25,6 +25,7 @@ public final class Document {
     public var isBinary: Bool
     public var previewMode: PreviewMode = .source
 
+    public var recoveryDiskConflict = false
     public var cursorPosition: Int = 0
     public var scrollOffset: NSPoint = .zero
     public var cachedTextStorage: NSTextStorage?
