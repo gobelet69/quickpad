@@ -111,7 +111,7 @@ import UniformTypeIdentifiers
     @objc public func showAbout() {
         let alert = NSAlert()
         alert.messageText = "QuickPad"
-        alert.informativeText = "Version 1.0.0\n\nUltra-fast native text editor with intelligent previews.\n\nCrafted by 111iridescence — The Prismatic Atelier."
+        alert.informativeText = "Version 1.1.0\n\nUltra-fast native text editor with intelligent previews.\n\nCrafted by 111iridescence — The Prismatic Atelier."
         alert.alertStyle = .informational
         alert.runModal()
     }

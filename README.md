@@ -91,7 +91,7 @@ $$\text{Performance} > \text{Reliability} > \text{Simplicity} > \text{Usability}
 ## 6. Installation Instructions
 
 1. Download the latest Universal DMG from the **[GitHub Releases](https://github.com/gobelet69/quickpad/releases/latest)** page:
-   - `QuickPad-1.0.1-universal.dmg`
+   - `QuickPad-1.1.0-universal.dmg`
 2. Open the downloaded `.dmg` disk image.
 3. Drag **QuickPad.app** into your `/Applications` directory.
 4. Launch **QuickPad** from Spotlight or `/Applications`.
@@ -193,15 +193,14 @@ The Markdown renderer supports standard GitHub Flavored Markdown syntax includin
 
 ## 12. Download and Releases
 
-- **Status**: Development & Staging.
-- **Repository Remote**: To be configured upon GitHub publication approval.
-- **Artifacts**: Local DMG packaged at `QuickPad-1.0.1-universal.dmg`.
+- **Releases**: [Download from GitHub](https://github.com/gobelet69/quickpad/releases).
+- **Artifact**: `QuickPad-1.1.0-universal.dmg`.
 
 ---
 
 ## 13. Contributing
 
-Contributions and feedback are appreciated. Please ensure all pull requests maintain the sub-100 ms startup invariant, pass the 53 automated test assertions (`./test.sh`), and adhere to AppKit native design principles.
+Contributions and feedback are appreciated. Please ensure all pull requests maintain the sub-100 ms startup invariant, pass the automated tests (`./test.sh`), and adhere to AppKit native design principles.
 
 ---
 
