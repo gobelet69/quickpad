@@ -221,13 +221,13 @@ public final class EditorView: ThemeBackgroundView, NSTextViewDelegate, FindBarD
             return
         }
 
+        let lineRange = string.lineRange(for: NSRange(location: selectedRange.location, length: 0))
         var line = 1
-        var col = 1
-        string.enumerateSubstrings(in: NSRange(location: 0, length: selectedRange.location), options: [.byLines, .substringNotRequired]) { _, _, _, _ in
+        // Only complete preceding lines count; the caret's current line is already one-based.
+        string.enumerateSubstrings(in: NSRange(location: 0, length: lineRange.location), options: [.byLines, .substringNotRequired]) { _, _, _, _ in
             line += 1
         }
-        let lineRange = string.lineRange(for: NSRange(location: selectedRange.location, length: 0))
-        col = selectedRange.location - lineRange.location + 1
+        let col = selectedRange.location - lineRange.location + 1
 
         delegate?.editorCursorMoved(self, line: line, col: col, selectionLength: selectedRange.length)
     }

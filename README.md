@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/architecture-Universal%202-purple" alt="Apple Silicon and Intel">
   <img src="https://img.shields.io/badge/language-Swift%206-orange?logo=swift" alt="Swift 6">
   <img src="https://img.shields.io/badge/ui-Native%20AppKit-black" alt="AppKit">
-  <img src="https://img.shields.io/badge/tests-102%20assertions%20passing-brightgreen" alt="102 assertions passing">
+  <img src="https://img.shields.io/badge/tests-126%20assertions%20passing-brightgreen" alt="126 assertions passing">
   <img src="https://img.shields.io/badge/licence-MIT-green" alt="Licence MIT">
 </p>
 
@@ -172,7 +172,7 @@ The Markdown renderer supports standard GitHub Flavored Markdown syntax includin
    ```bash
    ./test.sh
    ```
-   All 53 unit assertions verify encoding detection, BOM parsing, CSV compliance, and atomic safety.
+   All 126 assertions verify encoding detection, BOM parsing, CSV compliance, atomic safety, compact Find layout, appearance, tab accessibility and cursor positions.
 3. Run performance benchmarks:
    ```bash
    ./run_benchmark.sh

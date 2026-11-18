@@ -3,6 +3,7 @@
 ## 1.1.1 — 2026-11-18
 
 - Keep Find and Replace controls usable in narrow editor panes.
+- Report the correct cursor line while typing within a line or moving across line endings.
 - Update editor chrome and line numbers when switching between light and dark appearances.
 - Expose tab selection and close actions as separate accessible controls, and keep the selected tab visible.
 - Add Control-Tab and Control-Shift-Tab shortcuts for moving between tabs.

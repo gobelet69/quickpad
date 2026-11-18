@@ -289,6 +289,41 @@ assertEqual(tabProbe.selected, 0, "Native tab selection must dispatch the matchi
 (independentlyAccessibleCloseButtons.first as? NSButton)?.performClick(nil)
 assertEqual(tabProbe.closed, 0, "Native close must dispatch independently from selection")
 
+// Check the editor's real selection callback, including line terminators and UTF-16 offsets.
+final class CursorStatsProbe: EditorViewDelegate {
+    var line = 0
+    var col = 0
+    func editorTextDidChange(_ editor: EditorView) {}
+    func editorCursorMoved(_ editor: EditorView, line: Int, col: Int, selectionLength: Int) {
+        self.line = line
+        self.col = col
+    }
+}
+let cursorEditor = EditorView(frame: NSRect(x: 0, y: 0, width: 640, height: 480))
+let cursorProbe = CursorStatsProbe()
+cursorEditor.delegate = cursorProbe
+let cursorCases: [(String, Int, Int, Int)] = [
+    ("", 0, 1, 1),
+    ("hello", 0, 1, 1),
+    ("hello", 5, 1, 6),
+    ("one\ntwo", 3, 1, 4),
+    ("one\ntwo", 4, 2, 1),
+    ("one\ntwo", 7, 2, 4),
+    ("one\n", 4, 2, 1),
+    ("one\n\n", 5, 3, 1),
+    ("one\r\ntwo", 5, 2, 1),
+    ("one\rtwo", 4, 2, 1),
+    ("a\u{2028}b", 2, 2, 1),
+    ("🌈x", 3, 1, 4),
+]
+for (text, offset, line, col) in cursorCases {
+    cursorEditor.textView.string = text
+    cursorEditor.textView.setSelectedRange(NSRange(location: offset, length: 0))
+    cursorEditor.textViewDidChangeSelection(Notification(name: NSTextView.didChangeSelectionNotification, object: cursorEditor.textView))
+    assertEqual(cursorProbe.line, line, "Cursor line at UTF-16 offset \(offset) in \(text.debugDescription)")
+    assertEqual(cursorProbe.col, col, "Cursor column at UTF-16 offset \(offset) in \(text.debugDescription)")
+}
+
 print("--------------------------------------------------")
 print("All checks finished: \(testsPassed) assertions passed, \(testsFailed) failed.")
 if testsFailed > 0 {
