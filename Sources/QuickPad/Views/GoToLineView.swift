@@ -5,7 +5,8 @@ public protocol GoToLineDelegate: AnyObject {
     func closeGoToLine()
 }
 
-public final class GoToLineView: NSView, NSTextFieldDelegate {
+public final class GoToLineView: ThemeBackgroundView, NSTextFieldDelegate {
+    public override var themeBackgroundColor: NSColor { Theme.surface }
     public weak var delegate: GoToLineDelegate?
     private var inputField: NSTextField!
 

@@ -6,7 +6,7 @@ cd "${SCRIPT_DIR}"
 
 APP_NAME="QuickPad"
 BUNDLE_ID="org.111iridescence.quickpad"
-VERSION="1.1.0"
+VERSION="1.1.1"
 UNIVERSAL="${UNIVERSAL:-0}"
 
 if [ "$UNIVERSAL" = "1" ]; then
@@ -16,7 +16,8 @@ else
 fi
 
 SRC_APP="${APP_NAME}.app"
-STAGING_DIR="/tmp/QuickPad_DMG_Staging"
+STAGING_DIR="$(mktemp -d /tmp/QuickPad_DMG_Staging.XXXXXX)"
+trap 'rm -rf "${STAGING_DIR}"' EXIT
 DIST_DIR="${SCRIPT_DIR}/dist"
 
 echo "============================================================"
@@ -27,8 +28,7 @@ echo "============================================================"
 UNIVERSAL="${UNIVERSAL}" ./build.sh release
 
 echo "==> Preparing DMG staging directory..."
-rm -rf "${STAGING_DIR}" "${DIST_DIR}"
-mkdir -p "${STAGING_DIR}" "${DIST_DIR}"
+mkdir -p "${DIST_DIR}"
 
 echo "==> Copying ${SRC_APP} to staging..."
 cp -R "${SRC_APP}" "${STAGING_DIR}/"

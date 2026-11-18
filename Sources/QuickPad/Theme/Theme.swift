@@ -21,8 +21,8 @@ public enum Theme {
     public static let amber = NSColor(srgbRed: 0xF5/255.0, green: 0x9E/255.0, blue: 0x0B/255.0, alpha: 1.0)
 
     public static func isDark(_ appearance: NSAppearance? = nil) -> Bool {
-        if let appearance = appearance, appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return true
+        if let appearance = appearance {
+            return appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         }
         if let app = NSApp, app.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
             return true
@@ -67,11 +67,7 @@ public enum Theme {
             : NSColor(srgbRed: 0xF4/255.0, green: 0xF2/255.0, blue: 0xF7/255.0, alpha: 1.0)
     }
 
-    public static let gutterText: NSColor = NSColor(name: nil) { appearance in
-        Theme.isDark(appearance)
-            ? NSColor(srgbRed: 0x65/255.0, green: 0x5D/255.0, blue: 0x70/255.0, alpha: 1.0)
-            : NSColor(srgbRed: 0xA2/255.0, green: 0x9A/255.0, blue: 0xAA/255.0, alpha: 1.0)
-    }
+    public static let gutterText: NSColor = textMuted
 
     public static let activeLineHighlight: NSColor = NSColor(name: nil) { appearance in
         Theme.isDark(appearance)
@@ -161,5 +157,24 @@ public enum Theme {
 
     public static var uiSmallFont: NSFont {
         return NSFont.systemFont(ofSize: 11.0, weight: .regular)
+    }
+}
+
+/// Resolve layer colors again when the effective appearance changes. Keep draw(_:) enabled.
+public class ThemeBackgroundView: NSView {
+    public var themeBackgroundColor: NSColor { Theme.background }
+    public override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshThemeBackground()
+    }
+    public override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshThemeBackground()
+    }
+    private func refreshThemeBackground() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = themeBackgroundColor.cgColor
+        }
+        needsDisplay = true
     }
 }

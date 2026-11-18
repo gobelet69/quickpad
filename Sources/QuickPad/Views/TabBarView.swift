@@ -6,7 +6,8 @@ public protocol TabBarDelegate: AnyObject {
     func newTabRequested()
 }
 
-public final class TabBarView: NSView {
+public final class TabBarView: ThemeBackgroundView {
+    public override var themeBackgroundColor: NSColor { Theme.gutterBackground }
     public weak var delegate: TabBarDelegate?
 
     private var scrollView: NSScrollView!
@@ -30,7 +31,10 @@ public final class TabBarView: NSView {
         wantsLayer = true
         layer?.backgroundColor = Theme.gutterBackground.cgColor
 
-        newTabButton = NSButton(title: "+", target: self, action: #selector(newTabClicked))
+        newTabButton = NSButton(title: "", target: self, action: #selector(newTabClicked))
+        newTabButton.image = NSImage(systemSymbolName: "plus", accessibilityDescription: "New Tab")
+        newTabButton.setAccessibilityLabel("New Tab")
+        newTabButton.toolTip = "New Tab (⌘N)"
         newTabButton.bezelStyle = .inline
         newTabButton.isBordered = false
         newTabButton.font = NSFont.systemFont(ofSize: 14, weight: .medium)
@@ -90,6 +94,10 @@ public final class TabBarView: NSView {
         }
 
         tabsContainer.frame.size.width = max(bounds.width - 36, currentX + 8.0)
+        if tabsContainer.subviews.indices.contains(activeIndex) {
+            let activeTab = tabsContainer.subviews[activeIndex]
+            activeTab.scrollToVisible(activeTab.bounds)
+        }
     }
 
     @objc private func newTabClicked() {
@@ -120,18 +128,35 @@ private final class TabItemView: NSView {
         self.index = index
         super.init(frame: frameRect)
         self.wantsLayer = true
+        // Selection and close are sibling native controls. Nesting buttons hides
+        // either the close action or the selector in AppKit's exported AX tree.
+        setAccessibilityElement(false)
+        toolTip = title
         self.layer?.cornerRadius = 5.0
         self.layer?.masksToBounds = true
         self.layer?.backgroundColor = isActive ? Theme.surface.cgColor : NSColor.clear.cgColor
 
-        let label = NSTextField(labelWithString: title)
-        label.font = isActive ? Theme.uiBoldFont : Theme.uiFont
-        label.textColor = isActive ? Theme.foreground : Theme.textMuted
-        label.lineBreakMode = .byTruncatingTail
-        label.frame = NSRect(x: 10, y: (frame.height - 18) / 2, width: frame.width - 32, height: 18)
-        addSubview(label)
+        let selectButton = NSButton(title: title, target: self, action: #selector(selectClicked))
+        selectButton.isBordered = false
+        selectButton.setButtonType(.momentaryChange)
+        selectButton.alignment = .left
+        selectButton.font = isActive ? Theme.uiBoldFont : Theme.uiFont
+        selectButton.attributedTitle = NSAttributedString(string: title, attributes: [
+            .font: isActive ? Theme.uiBoldFont : Theme.uiFont,
+            .foregroundColor: isActive ? Theme.foreground : Theme.textMuted
+        ])
+        selectButton.cell?.lineBreakMode = .byTruncatingTail
+        selectButton.frame = NSRect(x: 8, y: 0, width: frame.width - 34, height: frame.height)
+        selectButton.setAccessibilityRole(.radioButton)
+        selectButton.setAccessibilityLabel(title)
+        selectButton.setAccessibilityValue(NSNumber(value: isActive))
+        addSubview(selectButton)
 
-        let closeBtn = NSButton(title: "✕", target: self, action: #selector(closeClicked))
+        let closeName = "Close " + title.replacingOccurrences(of: " •", with: "")
+        let closeBtn = NSButton(title: "", target: self, action: #selector(closeClicked))
+        closeBtn.image = NSImage(systemSymbolName: "xmark", accessibilityDescription: closeName)
+        closeBtn.setAccessibilityLabel(closeName)
+        closeBtn.toolTip = closeName
         closeBtn.bezelStyle = .inline
         closeBtn.isBordered = false
         closeBtn.font = NSFont.systemFont(ofSize: 10, weight: .regular)
@@ -143,7 +168,15 @@ private final class TabItemView: NSView {
         fatalError()
     }
 
-    override func mouseDown(with event: NSEvent) {
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = isActive ? Theme.surface.cgColor : NSColor.clear.cgColor
+        }
+        needsDisplay = true
+    }
+
+    @objc private func selectClicked() {
         onSelect?(index)
     }
 

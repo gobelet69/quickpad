@@ -5,7 +5,8 @@ public protocol EditorViewDelegate: AnyObject {
     func editorCursorMoved(_ editor: EditorView, line: Int, col: Int, selectionLength: Int)
 }
 
-public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoToLineDelegate {
+public final class EditorView: ThemeBackgroundView, NSTextViewDelegate, FindBarDelegate, GoToLineDelegate {
+    public override var themeBackgroundColor: NSColor { Theme.background }
     public weak var delegate: EditorViewDelegate?
 
     public override var isFlipped: Bool { true }
@@ -99,7 +100,7 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
         addSubview(gutterView)
 
         // 3. Find Bar (hidden by default)
-        findBarView = FindBarView(frame: NSRect(x: 0, y: 0, width: bounds.width, height: 70))
+        findBarView = FindBarView(frame: NSRect(x: 0, y: 0, width: bounds.width, height: 104))
         findBarView.autoresizingMask = [.width, .maxYMargin]
         findBarView.delegate = self
         findBarView.isHidden = true
@@ -139,16 +140,16 @@ public final class EditorView: NSView, NSTextViewDelegate, FindBarDelegate, GoTo
     private func updateGutterLayout() {
         gutterView.updateWidth()
         let gutterWidth = gutterView.frame.width
-        let topInset: CGFloat = (findBarView.isHidden ? 0 : 70) + (goToLineView.isHidden ? 0 : 36)
+        let topInset: CGFloat = (findBarView.isHidden ? 0 : findBarView.preferredHeight) + (goToLineView.isHidden ? 0 : 36)
 
         gutterView.frame = NSRect(x: 0, y: topInset, width: gutterWidth, height: max(0, bounds.height - topInset))
         scrollView.frame = NSRect(x: gutterWidth, y: topInset, width: max(0, bounds.width - gutterWidth), height: max(0, bounds.height - topInset))
 
         if !findBarView.isHidden {
-            findBarView.frame = NSRect(x: 0, y: 0, width: bounds.width, height: 70)
+            findBarView.frame = NSRect(x: 0, y: 0, width: bounds.width, height: findBarView.preferredHeight)
         }
         if !goToLineView.isHidden {
-            let y: CGFloat = findBarView.isHidden ? 0 : 70
+            let y: CGFloat = findBarView.isHidden ? 0 : findBarView.preferredHeight
             goToLineView.frame = NSRect(x: 0, y: y, width: bounds.width, height: 36)
         }
     }

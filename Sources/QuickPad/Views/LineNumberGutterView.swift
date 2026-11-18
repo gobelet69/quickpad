@@ -1,6 +1,7 @@
 import AppKit
 
-public final class LineNumberGutterView: NSView {
+public final class LineNumberGutterView: ThemeBackgroundView {
+    public override var themeBackgroundColor: NSColor { Theme.gutterBackground }
     public weak var textView: NSTextView?
     private var digitCount: Int = 1
 

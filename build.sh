@@ -5,12 +5,12 @@ APP="QuickPad"
 BUNDLE="${APP}.app"
 BUILD_CONFIG="${1:-release}"
 UNIVERSAL="${UNIVERSAL:-0}"
-OUTPUT_BIN="/tmp/${APP}Bin"
+
 
 echo "▸ Staging source files in /tmp to prevent iCloud coordination locks…"
-BUILD_STAGE="/tmp/QuickPadBuildStage"
-rm -rf "${BUILD_STAGE}"
-mkdir -p "${BUILD_STAGE}"
+BUILD_STAGE="$(mktemp -d /tmp/QuickPadBuildStage.XXXXXX)"
+trap 'rm -rf "${BUILD_STAGE}"' EXIT
+OUTPUT_BIN="${BUILD_STAGE}/${APP}"
 cp -R Sources "${BUILD_STAGE}/"
 
 echo "▸ Compiling ${APP} (${BUILD_CONFIG}, Universal=${UNIVERSAL})…"
@@ -34,7 +34,6 @@ else
 fi
 
 cd - >/dev/null
-rm -rf "${BUILD_STAGE}"
 
 echo "▸ Packaging ${BUNDLE}…"
 rm -rf "${BUNDLE}"
@@ -70,9 +69,9 @@ cat > "${BUNDLE}/Contents/Info.plist" << 'PLIST'
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.1.0</string>
+    <string>1.1.1</string>
     <key>CFBundleVersion</key>
-    <string>3</string>
+    <string>4</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>NSHighResolutionCapable</key>

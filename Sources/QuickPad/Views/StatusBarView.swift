@@ -4,7 +4,8 @@ public protocol StatusBarDelegate: AnyObject {
     func previewModeChanged(to mode: PreviewMode)
 }
 
-public final class StatusBarView: NSView {
+public final class StatusBarView: ThemeBackgroundView {
+    public override var themeBackgroundColor: NSColor { Theme.gutterBackground }
     public weak var delegate: StatusBarDelegate?
 
     private var cursorLabel: NSTextField!

@@ -93,6 +93,14 @@ public enum AppMenu {
         let windowMenu = NSMenu(title: "Window")
         windowMenuItem.submenu = windowMenu
 
+        let nextTab = NSMenuItem(title: "Next Tab", action: #selector(AppDelegate.menuNextTab), keyEquivalent: "\t")
+        nextTab.keyEquivalentModifierMask = [.control]
+        windowMenu.addItem(nextTab)
+        let previousTab = NSMenuItem(title: "Previous Tab", action: #selector(AppDelegate.menuPreviousTab), keyEquivalent: "\t")
+        previousTab.keyEquivalentModifierMask = [.control, .shift]
+        windowMenu.addItem(previousTab)
+        windowMenu.addItem(.separator())
+
         windowMenu.addItem(NSMenuItem(title: "Minimize", action: #selector(NSWindow.miniaturize(_:)), keyEquivalent: "m"))
         windowMenu.addItem(NSMenuItem(title: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: ""))
         windowMenu.addItem(NSMenuItem.separator())

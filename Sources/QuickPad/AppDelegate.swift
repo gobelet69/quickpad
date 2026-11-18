@@ -80,6 +80,16 @@ import UniformTypeIdentifiers
         }
     }
 
+    @objc public func menuNextTab() {
+        guard let wc = windowController, wc.documents.count > 1 else { return }
+        wc.switchToDocument(at: (wc.activeIndex + 1) % wc.documents.count)
+    }
+
+    @objc public func menuPreviousTab() {
+        guard let wc = windowController, wc.documents.count > 1 else { return }
+        wc.switchToDocument(at: (wc.activeIndex + wc.documents.count - 1) % wc.documents.count)
+    }
+
     @objc public func menuFind() {
         windowController?.showFind()
     }

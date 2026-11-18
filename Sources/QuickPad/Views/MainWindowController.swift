@@ -48,7 +48,7 @@ public final class MainWindowController: NSWindowController, NSWindowDelegate, T
 
     private func setupLayout() {
         guard let window = window else { return }
-        let contentView = NSView(frame: window.contentRect(forFrameRect: window.frame))
+        let contentView = ThemeBackgroundView(frame: window.contentRect(forFrameRect: window.frame))
         contentView.wantsLayer = true
         contentView.layer?.backgroundColor = Theme.background.cgColor
         window.contentView = contentView

@@ -230,6 +230,65 @@ try? FileManager.default.removeItem(at: sessionDir)
 
 try? FileManager.default.removeItem(at: tempFile)
 
+// Exercise actual AppKit geometry rather than duplicating layout constants.
+print("  • Testing Compact Find Layout & Appearance...")
+let testApplication = NSApplication.shared
+for width: CGFloat in [580, 280] {
+    let bar = FindBarView(frame: NSRect(x: 0, y: 0, width: width, height: 120))
+    bar.layoutSubtreeIfNeeded()
+    func checkControls(_ view: NSView) {
+        for child in view.subviews {
+            if child is NSControl {
+                let rect = child.convert(child.bounds, to: bar)
+                assertTrue(rect.minX >= -0.5 && rect.maxX <= width + 0.5, "Find control outside \(width)pt: \(rect)")
+            }
+            checkControls(child)
+        }
+    }
+    checkControls(bar)
+}
+let appearanceBar = FindBarView(frame: NSRect(x: 0, y: 0, width: 580, height: 120))
+for mode in [NSAppearance.Name.darkAqua, .aqua] {
+    appearanceBar.appearance = NSAppearance(named: mode)
+    appearanceBar.viewDidChangeEffectiveAppearance()
+    var expectedColor: NSColor!
+    appearanceBar.effectiveAppearance.performAsCurrentDrawingAppearance {
+        expectedColor = NSColor(cgColor: Theme.surface.cgColor)?.usingColorSpace(.sRGB)
+    }
+    let actualColor = appearanceBar.layer?.backgroundColor.flatMap { NSColor(cgColor: $0)?.usingColorSpace(.sRGB) }
+    assertTrue(actualColor != nil && abs(actualColor!.redComponent - expectedColor.redComponent) < 0.001,
+               "Find background did not update for \(mode)")
+}
+testApplication.appearance = NSAppearance(named: .darkAqua)
+assertFalse(Theme.isDark(NSAppearance(named: .aqua)), "Explicit view appearance must override app appearance")
+testApplication.appearance = nil
+
+let accessibleTabs = TabBarView(frame: NSRect(x: 0, y: 0, width: 280, height: 34))
+accessibleTabs.update(documents: [Document(), Document(), Document(), Document()], activeIndex: 3)
+func allControls(_ view: NSView) -> [NSView] { view.subviews.flatMap { [$0] + allControls($0) } }
+let tabControls = allControls(accessibleTabs)
+assertTrue(tabControls.contains { $0.accessibilityLabel() == "New Tab" }, "New tab needs an action name")
+assertEqual(tabControls.filter { $0.accessibilityRole() == .radioButton }.count, 4, "Every tab must expose selection semantics")
+assertTrue(tabControls.contains { $0.accessibilityLabel() == "Close Untitled" }, "Tab close must identify the document")
+
+let tabSelectors = tabControls.filter { $0.accessibilityRole() == .radioButton }
+let independentlyAccessibleCloseButtons = tabSelectors.flatMap { selector in
+    (selector.superview?.subviews ?? []).filter { $0.accessibilityLabel()?.hasPrefix("Close ") == true }
+}
+assertEqual(independentlyAccessibleCloseButtons.count, 4, "Tab selection and close must be independent accessibility controls")
+final class TabActionProbe: TabBarDelegate {
+    var selected: Int?; var closed: Int?
+    func tabSelected(at index: Int) { selected = index }
+    func tabClosed(at index: Int) { closed = index }
+    func newTabRequested() {}
+}
+let tabProbe = TabActionProbe()
+accessibleTabs.delegate = tabProbe
+(tabSelectors.first as? NSButton)?.performClick(nil)
+assertEqual(tabProbe.selected, 0, "Native tab selection must dispatch the matching document")
+(independentlyAccessibleCloseButtons.first as? NSButton)?.performClick(nil)
+assertEqual(tabProbe.closed, 0, "Native close must dispatch independently from selection")
+
 print("--------------------------------------------------")
 print("All checks finished: \(testsPassed) assertions passed, \(testsFailed) failed.")
 if testsFailed > 0 {

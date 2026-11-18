@@ -6,16 +6,16 @@
 
 <p align="center">
   <b>An ultra-fast, native macOS text editor with intelligent live previews and low resource overhead.</b><br>
-  Engineered with Swift 6 and AppKit specifically for Apple Silicon. Zero startup latency, zero telemetry.
+  Engineered with Swift 6 and AppKit for Apple Silicon and Intel. No telemetry.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-development%20%2F%20staging-amber" alt="Status: Staging">
   <img src="https://img.shields.io/badge/platform-macOS%2013.0%2B-blue?logo=apple" alt="macOS 13+">
-  <img src="https://img.shields.io/badge/architecture-Apple%20Silicon%20(arm64)-purple" alt="Apple Silicon">
+  <img src="https://img.shields.io/badge/architecture-Universal%202-purple" alt="Apple Silicon and Intel">
   <img src="https://img.shields.io/badge/language-Swift%206-orange?logo=swift" alt="Swift 6">
   <img src="https://img.shields.io/badge/ui-Native%20AppKit-black" alt="AppKit">
-  <img src="https://img.shields.io/badge/tests-53%20assertions%20passing-brightgreen" alt="53 assertions passing">
+  <img src="https://img.shields.io/badge/tests-102%20assertions%20passing-brightgreen" alt="102 assertions passing">
   <img src="https://img.shields.io/badge/licence-MIT-green" alt="Licence MIT">
 </p>
 
@@ -90,8 +90,10 @@ $$\text{Performance} > \text{Reliability} > \text{Simplicity} > \text{Usability}
 
 ## 6. Installation Instructions
 
+Version **1.1.1** improves compact Find and Replace layouts, tab accessibility and keyboard navigation, and updates colours when the macOS appearance changes. See [CHANGELOG.md](CHANGELOG.md).
+
 1. Download the latest Universal DMG from the **[GitHub Releases](https://github.com/gobelet69/quickpad/releases/latest)** page:
-   - `QuickPad-1.1.0-universal.dmg`
+   - `QuickPad-1.1.1-universal.dmg`
 2. Open the downloaded `.dmg` disk image.
 3. Drag **QuickPad.app** into your `/Applications` directory.
 4. Launch **QuickPad** from Spotlight or `/Applications`.
@@ -102,7 +104,7 @@ $$\text{Performance} > \text{Reliability} > \text{Simplicity} > \text{Usability}
      ```bash
      xattr -d com.apple.quarantine "/Applications/QuickPad.app"
      ```
-   Once opened, macOS permanently remembers your choice, and subsequent launches start instantly without warnings.
+   macOS usually remembers approval for that app. A later update may require approval again.
 
 ---
 
@@ -194,7 +196,7 @@ The Markdown renderer supports standard GitHub Flavored Markdown syntax includin
 ## 12. Download and Releases
 
 - **Releases**: [Download from GitHub](https://github.com/gobelet69/quickpad/releases).
-- **Artifact**: `QuickPad-1.1.0-universal.dmg`.
+- **Artifact**: `QuickPad-1.1.1-universal.dmg`.
 
 ---
 
